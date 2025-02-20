@@ -19,3 +19,4 @@
 ## Задания
 
 - [s1-01](/modules/s1-01-scala-intro/src/main/scala/hw/Task01.scala)
+- [s1-02](/modules/s1-02-adts/src/main/scala/hw)
