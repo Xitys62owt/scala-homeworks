@@ -20,3 +20,4 @@
 
 - [s1-01](/modules/s1-01-scala-intro/src/main/scala/hw/Task01.scala)
 - [s1-02](/modules/s1-02-adts/src/main/scala/hw)
+- [s1-03](/modules/s1-03-collections/src/main/scala/hw)

@@ -40,6 +40,16 @@ lazy val `s1-02-adts` = (project in file(s"modules/$s1_02"))
     )
   )
 
+val s1_03 = "s1-03-collections"
+lazy val `s1-03-collections` = (project in file(s"modules/$s1_03"))
+  .settings(commonSettings)
+  .settings(
+    name := s1_03,
+    libraryDependencies ++= Seq(
+      munit
+    )
+  )
+
 lazy val `root` = (project in file("."))
   .settings(
     name           := "root",
@@ -48,12 +58,14 @@ lazy val `root` = (project in file("."))
   .aggregate(
     `s1-01-scala-intro`,
     `s1-02-adts`,
+    `s1-03-collections`,
   )
 
 lazy val moduleKeys: Map[String, String] =
   List(
     s1_01,
-    s1_02
+    s1_02,
+    s1_03
   ).map(x => x.take(5) -> x).toMap
 
 commands += Command.command("hw") { state =>
