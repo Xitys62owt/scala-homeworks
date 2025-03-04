@@ -69,7 +69,10 @@ lazy val moduleKeys: Map[String, String] =
   ).map(x => x.take(5) -> x).toMap
 
 commands += Command.command("hw") { state =>
-  val branch = Process("git branch --show-current").lineStream.headOption
+  val branch =
+    sys.env.get("CI_COMMIT_BRANCH").orElse(Process("git branch --show-current").lineStream.headOption)
+
+  sLog.value.warn(s"CURRENT BRANCH: $branch")
 
   val pattern = """solution-(s\d-\d\d).*""".r
   branch.flatMap {
