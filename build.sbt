@@ -76,7 +76,8 @@ lazy val moduleKeys: Map[String, String] =
   List(
     s1_01,
     s1_02,
-    s1_03
+    s1_03,
+    s1_04
   ).map(x => x.take(5) -> x).toMap
 
 commands += Command.command("hw") { state =>
