@@ -49,6 +49,16 @@ lazy val `s1-03-collections` = (project in file(s"modules/$s1_03"))
       munit
     )
   )
+val s1_04 = "s1-04-laziness-errors"
+
+lazy val `s1-04-laziness-errors` = (project in file(s"modules/$s1_04"))
+  .settings(commonSettings)
+  .settings(
+    name := s1_04,
+    libraryDependencies ++= Seq(
+      munit
+    )
+  )
 
 lazy val `root` = (project in file("."))
   .settings(
@@ -59,6 +69,7 @@ lazy val `root` = (project in file("."))
     `s1-01-scala-intro`,
     `s1-02-adts`,
     `s1-03-collections`,
+    `s1-04-laziness-errors`
   )
 
 lazy val moduleKeys: Map[String, String] =
