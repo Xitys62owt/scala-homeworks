@@ -60,6 +60,18 @@ lazy val `s1-04-laziness-errors` = (project in file(s"modules/$s1_04"))
     )
   )
 
+val s1_05 = "s1-05-type-classes"
+
+lazy val `s1-05-type-classes` = (project in file(s"modules/$s1_05"))
+  .settings(commonSettings)
+  .settings(
+    name := s1_05,
+    libraryDependencies ++= Seq(
+      cats,
+      munit
+    )
+  )
+
 lazy val `root` = (project in file("."))
   .settings(
     name           := "root",
@@ -69,7 +81,8 @@ lazy val `root` = (project in file("."))
     `s1-01-scala-intro`,
     `s1-02-adts`,
     `s1-03-collections`,
-    `s1-04-laziness-errors`
+    `s1-04-laziness-errors`,
+    `s1-05-type-classes`
   )
 
 lazy val moduleKeys: Map[String, String] =
@@ -77,7 +90,8 @@ lazy val moduleKeys: Map[String, String] =
     s1_01,
     s1_02,
     s1_03,
-    s1_04
+    s1_04,
+    s1_05
   ).map(x => x.take(5) -> x).toMap
 
 commands += Command.command("hw") { state =>
