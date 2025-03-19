@@ -37,7 +37,8 @@ class PolynomSpec extends munit.FunSuite:
     )
 
   // Тесты ниже следует закомментировать, если не хочешь реализовывать опциональные задания
-    
+
+  /*
   test("div should eval division for polynoms on real field"):
     assertEquals(
       Polynom
@@ -75,4 +76,4 @@ class PolynomSpec extends munit.FunSuite:
           Polynom.from(1, 0, 3, 3, 2, 3)
         ),
       Polynom.from(1, 0, 2, 3)
-    )
+    )*/
