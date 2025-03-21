@@ -23,3 +23,4 @@
 - [s1-03](/modules/s1-03-collections/src/main/scala/hw)
 - [s1-04](/modules/s1-04-laziness-errors/src/main/scala/hw)
 - [s1-05](/modules/s1-05-type-classes/src/main/scala/hw)
+- [s1-06](/modules/s1-06-concurrency/src/main/scala/hw)

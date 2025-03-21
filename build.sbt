@@ -72,6 +72,17 @@ lazy val `s1-05-type-classes` = (project in file(s"modules/$s1_05"))
     )
   )
 
+val s1_06 = "s1-06-concurrency"
+
+lazy val `s1-06-concurrency` = (project in file(s"modules/$s1_06"))
+  .settings(commonSettings)
+  .settings(
+    name := s1_06,
+    libraryDependencies ++= Seq(
+      scalatest
+    )
+  )
+
 lazy val `root` = (project in file("."))
   .settings(
     name           := "root",
@@ -82,7 +93,8 @@ lazy val `root` = (project in file("."))
     `s1-02-adts`,
     `s1-03-collections`,
     `s1-04-laziness-errors`,
-    `s1-05-type-classes`
+    `s1-05-type-classes`,
+    `s1-06-concurrency`
   )
 
 lazy val moduleKeys: Map[String, String] =
@@ -91,7 +103,8 @@ lazy val moduleKeys: Map[String, String] =
     s1_02,
     s1_03,
     s1_04,
-    s1_05
+    s1_05,
+    s1_06
   ).map(x => x.take(5) -> x).toMap
 
 commands += Command.command("hw") { state =>
