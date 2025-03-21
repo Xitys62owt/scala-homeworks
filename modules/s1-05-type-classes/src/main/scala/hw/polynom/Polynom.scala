@@ -11,11 +11,12 @@ case class Polynom[A](coeffs: List[A]):
    Реализовать красивый toString, строка на выходе должна быть похожа на многочлен
    */
   override def toString: String =
-    var terms = List[String]()
-    for ((c, i) <- coeffs.zipWithIndex)
-      if (c != 0)
-        terms = terms :+ s"${c}x^$i"
-    terms.reverse.mkString(" + ")
+    coeffs.zipWithIndex
+      .collect {
+        case (c, i) if c != 0 => s"${c}x^$i"
+      }
+      .reverse
+      .mkString(" + ")
 
   /**
    Реализовать разность многочленов над полем F

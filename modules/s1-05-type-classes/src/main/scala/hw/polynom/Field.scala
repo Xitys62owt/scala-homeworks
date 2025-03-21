@@ -87,8 +87,8 @@ object Field:
    1) не надо проверять что на входе действительно простое число
    2) если передать составное число в pField, то на выходе может быть любая некорректная структура
    */
-  def pField(p: Int): Field[Int] = {
-    given Field[Int] with
+  def pField(p: Int): Field[Int] =
+    new Field[Int]:
       def zero: Int = 0
       def one: Int = 1
       def add(a: Int, b: Int): Int = (a + b) % p
@@ -100,5 +100,3 @@ object Field:
           (1 until p).find(x => (a * x) % p == 1) match
             case Some(x) => Some(x)
             case None    => None
-    Field[Int]
-  }

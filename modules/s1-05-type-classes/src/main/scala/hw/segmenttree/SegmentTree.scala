@@ -60,7 +60,7 @@ sealed trait SegmentTree[A: Monoid]:
         val mid = (startIdx + endIdx) / 2
         val l = if (idx <= mid) left.update(idx, a) else left
         val r = if (idx > mid) right.update(idx, a) else right
-        val nvalue = Monoid[A].combine(l.value, r.value)
+        val nvalue = l.value |+| r.value
         Node(nvalue, startIdx, endIdx, l, r)
 
   /**
@@ -84,7 +84,7 @@ sealed trait SegmentTree[A: Monoid]:
       case Node(_, startIdx, endIdx, left, right) =>
         val lValue = if (from <= left.endIdx) left.calc(from, to) else Monoid[A].empty
         val rValue = if (to >= right.startIdx) right.calc(from, to) else Monoid[A].empty
-        Monoid[A].combine(lValue, rValue)
+        lValue |+| rValue
       case Leaf(valueIdx, value) if valueIdx >= from && valueIdx <= to => value
       case _                                                           => Monoid[A].empty
 
@@ -125,16 +125,17 @@ object SegmentTree:
   def apply[A: Monoid](values: A*): SegmentTree[A] =
     val newSize = math.pow(2, math.ceil(math.log(values.length) / math.log(2))).toInt
     val newSeq = values.toSeq ++ Seq.fill(newSize - values.length)(Monoid[A].empty)
-    buildTree(newSeq.toIndexedSeq, 0, newSize - 1, Monoid[A])
+    buildTree(newSeq.toIndexedSeq, 0, newSize - 1)
 
-  def buildTree[A: Monoid](values: IndexedSeq[A], startIdx: Int, endIdx: Int, monoid: Monoid[A]): SegmentTree[A] =
+  // тупанул в прошлый раз, функцию-то брал из 3 дз
+  def buildTree[A: Monoid](values: IndexedSeq[A], startIdx: Int, endIdx: Int): SegmentTree[A] =
     if (startIdx == endIdx) {
       Leaf(startIdx, values(startIdx))
     } else {
       val mid = (startIdx + endIdx) / 2
-      val l = buildTree(values, startIdx, mid, monoid)
-      val r = buildTree(values, mid + 1, endIdx, monoid)
-      val value = monoid.combine(l.value, r.value)
+      val l = buildTree(values, startIdx, mid)
+      val r = buildTree(values, mid + 1, endIdx)
+      val value = l.value |+| r.value
       Node(value, startIdx, endIdx, l, r)
     }
 
@@ -151,33 +152,31 @@ object SegmentTree:
    *  SegmentTree(5, 2, 4, 1, 6, 7).max()
    */
   def fromSemigroup[A: Semigroup](values: A*): SegmentTree[Option[A]] =
-    given [A](using s: Semigroup[A]): Monoid[Option[A]] with
+    given monoid: Monoid[Option[A]] with
       val empty: Option[A] = None
       def combine(l: Option[A], r: Option[A]): Option[A] =
         (l, r) match
           case (None, None)       => None
-          case (Some(x), Some(y)) => Some(s.combine(x, y))
+          case (Some(x), Some(y)) => Some(x |+| y)
           case (x, None)          => x
           case (None, y)          => y
 
-    val monoid = summon[Monoid[Option[A]]]
     val newSize = math.pow(2, math.ceil(math.log(values.length) / math.log(2))).toInt
     val newSeq = values.map(Some(_)).toSeq ++ Seq.fill(newSize - values.length)(monoid.empty)
-    buildTreeOpt(newSeq.toIndexedSeq, 0, newSize - 1, monoid)
+    buildTreeOpt(newSeq.toIndexedSeq, 0, newSize - 1)
 
   def buildTreeOpt[A: Semigroup](
     values: IndexedSeq[Option[A]],
     startIdx: Int,
-    endIdx: Int,
-    monoid: Monoid[Option[A]]
+    endIdx: Int
   ): SegmentTree[Option[A]] =
     if (startIdx == endIdx) {
       Leaf(startIdx, values(startIdx))
     } else {
       val mid = (startIdx + endIdx) / 2
-      val l = buildTreeOpt(values, startIdx, mid, monoid)
-      val r = buildTreeOpt(values, mid + 1, endIdx, monoid)
-      val value = monoid.combine(l.value, r.value)
+      val l = buildTreeOpt(values, startIdx, mid)
+      val r = buildTreeOpt(values, mid + 1, endIdx)
+      val value = l.value |+| r.value
       Node(value, startIdx, endIdx, l, r)
     }
 
@@ -193,7 +192,7 @@ object SegmentTree:
  *  tree.update(2, 0) // должно компилироваться и работать как tree.update(2, Some(0))
  */
 
-  implicit class SegmentTreeOps[A](tree: SegmentTree[Option[A]])(using Semigroup[A]):
+  extension [A: Semigroup](tree: SegmentTree[Option[A]])
     def update(idx: Int, value: A): SegmentTree[Option[A]] = tree.update(idx, Some(value))
 
 /**
