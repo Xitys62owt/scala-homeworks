@@ -59,4 +59,3 @@ object Polynom:
      from(5, 1, 2, 7, 1) === 5x^4 + x^3 + 2x^2 + 7x + 1
    */
   def from[A](xs: A*): Polynom[A] = Polynom(xs.toList)
-

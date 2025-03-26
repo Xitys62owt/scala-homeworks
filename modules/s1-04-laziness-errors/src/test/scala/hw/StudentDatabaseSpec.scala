@@ -35,4 +35,3 @@ class StudentDatabaseSpec extends munit.FunSuite:
 
   test("StudentDatabase should provide proper information for determining best grade student via StudentStatisics"):
     assertEquals(1, 0)
-

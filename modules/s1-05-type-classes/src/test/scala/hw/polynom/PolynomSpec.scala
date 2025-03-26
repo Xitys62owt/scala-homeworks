@@ -37,7 +37,7 @@ class PolynomSpec extends munit.FunSuite:
     )
 
   // Тесты ниже следует закомментировать, если не хочешь реализовывать опциональные задания
-    
+
   test("div should eval division for polynoms on real field"):
     assertEquals(
       Polynom
