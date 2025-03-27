@@ -8,6 +8,10 @@ import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 
+import scala.annotation.nowarn
+
+@nowarn("msg=unused value")
+
 class FuturesSpec extends AnyFlatSpec with Matchers:
 
   "foldF" should "fold list of futures into a single future using combining function" in new WithGlobalExecutionContext:
