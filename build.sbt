@@ -94,6 +94,18 @@ lazy val `s1-07-effects-basic` = (project in file(s"modules/$s1_07"))
     )
   )
 
+
+val s1_08 = "s1-08-effects-di"
+
+lazy val `s1-08-effects-di` = (project in file(s"modules/$s1_08"))
+  .settings(commonSettings)
+  .settings(
+    name := s1_08,
+    libraryDependencies ++= Seq(
+      scalatest, ce, cetest, zio, ziotest
+    )
+  )
+
 lazy val `root` = (project in file("."))
   .settings(
     name           := "root",
@@ -106,7 +118,8 @@ lazy val `root` = (project in file("."))
     `s1-04-laziness-errors`,
     `s1-05-type-classes`,
     `s1-06-concurrency`,
-    `s1-07-effects-basic`
+    `s1-07-effects-basic`,
+    `ss1-08-effects-di`
   )
 
 lazy val moduleKeys: Map[String, String] =
@@ -117,8 +130,9 @@ lazy val moduleKeys: Map[String, String] =
     s1_04,
     s1_05,
     s1_06,
-    s1_07
-  ).map(x => x.take(5) -> x).toMap
+    s1_07,
+    s1_08
+  ).map(x => x.take(8) -> x).toMap
 
 commands += Command.command("hw") { state =>
   val branch =
