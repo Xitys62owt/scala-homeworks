@@ -1,15 +1,10 @@
 package sc02
 
-import cats.Traverse
 import cats.effect.*
-import cats.effect.implicits.* 
-import cats.effect.implicits.given 
-import cats.syntax.parallel.*
-import scala.concurrent.duration.{Duration, DurationInt}
 
+import scala.concurrent.duration.DurationInt
 
 object CeRacingDemo extends IOApp:
-
 
   object SlowStorage:
     private val bigStorage = Map(
@@ -30,7 +25,6 @@ object CeRacingDemo extends IOApp:
     def apply(idx: Int): IO[String] =
       IO.sleep(100.millis) *> IO(bigStorage(idx))
 
-
   object FastStorage:
     private val smallStorage = Map(
       3 -> "Martin Odersky",
@@ -48,39 +42,25 @@ object CeRacingDemo extends IOApp:
   // -------------------------------------------------------------
 
   def logLatency[A](io: IO[A]): IO[A] =
-    for 
+    for
       (lat, res) <- io.timed
       _ <- IO.println(s"Give $res. Take ${lat.toMillis}ms")
     yield res
-
-
 
   override def run(args: List[String]) =
     fetchCached
       .as(ExitCode.Success)
 
-  
-
-
   val fetchAll =
-    IO.parTraverseN(16)((1 to 11).toList):
-      idx => logLatency(FastStorage.get(idx).both(SlowStorage.get(idx))).map(_ orElse _)
-
-
-
+    IO.parTraverseN(16)((1 to 11).toList): idx =>
+      logLatency(FastStorage.get(idx).both(SlowStorage.get(idx))).map(_ orElse _)
 
   val fetchFast =
-    IO.parTraverseN(16)((1 to 11).toList):
-      idx => logLatency(FastStorage.get(idx) race SlowStorage.get(idx))
+    IO.parTraverseN(16)((1 to 11).toList): idx =>
+      logLatency(FastStorage.get(idx) race SlowStorage.get(idx))
     .map(_.toList)
-
-
-    
 
   val fetchCached =
-    IO.parTraverseN(16)((1 to 11).toList):
-      idx => logLatency(FastStorage(idx).orElse(SlowStorage(idx)))
+    IO.parTraverseN(16)((1 to 11).toList): idx =>
+      logLatency(FastStorage(idx).orElse(SlowStorage(idx)))
     .map(_.toList)
-
-
-

@@ -2,28 +2,21 @@ package sc01
 
 import scala.util.{Failure, Success, Try}
 
-
-
 // Handmade effect system
-
-
-
-
 
 ////////////////////////////////////////////////////////////////////
 // Executable encoding
 
-object ExecutableDemo1: 
+object ExecutableDemo1:
 
   final case class Effect[A](run: () => A)
 
   object Effect:
     def pure[A](value: => A) = Effect(() => value)
 
-  extension [A] (fa: Effect[A])
+  extension [A](fa: Effect[A])
     def flatMap[B](f: A => Effect[B]) = Effect(() => f(fa.run()).run())
     def map[B](f: A => B) = Effect(() => f(fa.run()))
-
 
 @main
 def execDemo1 =
@@ -31,13 +24,12 @@ def execDemo1 =
   @annotation.tailrec
   def fact(limit: Int, acc: Effect[BigInt] = Effect.pure(1)): Effect[BigInt] =
     if (limit < 1)
-      acc.map {
-        a => 
-          println("bottom")
-          a
+      acc.map { a =>
+        println("bottom")
+        a
       }
     else
-      fact(limit - 1, acc.map(_ * limit) )
+      fact(limit - 1, acc.map(_ * limit))
 
   val calculation = fact(100)
   println(calculation.run())
@@ -45,69 +37,53 @@ def execDemo1 =
 
   // Ленивость есть, а где контроль ошибок?
 
-
-
-
-
-
-
-
-object ExecutableDemo2: 
+object ExecutableDemo2:
 
   case class Effect[A](safeRun: () => Try[A])
-    
 
   object Effect:
-    def pure[A](value:  => A)         = Effect(() => Try(value))
+    def pure[A](value: => A) = Effect(() => Try(value))
     def raise[A](error: => Throwable) = Effect[A](() => Failure(error))
 
-  extension [A] (fa: Effect[A])
+  extension [A](fa: Effect[A])
     def run: () => A = () => fa.safeRun().get
 
     def flatMap[B](f: A => Effect[B]) = Effect(() =>
       fa.safeRun() match
         case Failure(exception) => Failure(exception)
         case Success(value)     => f(value).safeRun()
-      )
+    )
 
     def map[B](f: A => B) = Effect(() => fa.safeRun().map(f))
-
-
-
 
 @main
 def execDemo2 =
   import ExecutableDemo2.*
   def fact(limit: Int, acc: BigInt = 1): Effect[BigInt] =
-    if (limit <= 0)
-      Effect.raise(new Exception("Boom!"))
+    if (limit <= 0) Effect.raise(new Exception("Boom!"))
     else if (limit == 1)
       println("bottom")
       Effect.pure(acc)
-    else
-      fact(limit - 1, acc * limit)
+    else fact(limit - 1, acc * limit)
 
   println(fact(100).safeRun())
   println(fact(-10).safeRun())
-
-
 
 @main
 def helloDemo =
   import ExecutableDemo2.*
   val program =
     for {
-      _       <- Effect.pure(println("Who are you?"))
-      name    <- Effect.pure(scala.io.StdIn.readLine())
-      _       <- Effect.pure(println("O!, Really?"))
+      _ <- Effect.pure(println("Who are you?"))
+      name <- Effect.pure(scala.io.StdIn.readLine())
+      _ <- Effect.pure(println("O!, Really?"))
       confirm <- Effect.pure(scala.io.StdIn.readLine())
-      result  <- confirm.toLowerCase() match {
-                  case "yes" => Effect.pure(name)
-                  case _     => Effect.raise(new Exception("Inadequate"))
-                }
-      _       <- Effect.pure(println(s"Hello, $name!"))
+      result <- confirm.toLowerCase() match {
+        case "yes" => Effect.pure(name)
+        case _     => Effect.raise(new Exception("Inadequate"))
+      }
+      _ <- Effect.pure(println(s"Hello, $name!"))
     } yield result
-
 
   println(program.run())
   println()
@@ -115,19 +91,13 @@ def helloDemo =
   println()
   println(program.safeRun())
 
-
-
-  
-
 ////////////////////////////////////////////////////////////////////
 // Declarative encoding
 
-
-
 // Упрощённый знакомый пример:
 enum Eval[A]:
-  case Delay(f: () => Eval[A])              extends Eval[A]
-  case Value(v: A)                          extends Eval[A]
+  case Delay(f: () => Eval[A]) extends Eval[A]
+  case Value(v: A) extends Eval[A]
   case FlatMap(e: Eval[A], f: A => Eval[A]) extends Eval[A]
 
   def map(f: A => A): Eval[A] =
@@ -139,22 +109,18 @@ enum Eval[A]:
       case Eval.FlatMap(e, g) => FlatMap(e, x => g(x).flatMap(f))
 
 object Eval:
-	def delay[A](v: => Eval[A]): Eval[A] = v
-	def value[A](v: A): Eval[A] = Eval.Value(v)
-	@annotation.tailrec 
-	def fold[A](ev: Eval[A]): A = ev match
-		case Eval.Delay(f)      => fold(f())
-		case Eval.Value(v)      => v
-		case Eval.FlatMap(e, f) => e match
-			case Eval.Delay(g)      => fold(g().flatMap(f))
-			case Eval.Value(v)      => fold(f(v))
-			case Eval.FlatMap(e, g) => fold(e.flatMap(x => g(x).flatMap(f)))
+  def delay[A](v: => Eval[A]): Eval[A] = v
+  def value[A](v: A): Eval[A] = Eval.Value(v)
+  @annotation.tailrec
+  def fold[A](ev: Eval[A]): A = ev match
+    case Eval.Delay(f) => fold(f())
+    case Eval.Value(v) => v
+    case Eval.FlatMap(e, f) =>
+      e match
+        case Eval.Delay(g)      => fold(g().flatMap(f))
+        case Eval.Value(v)      => fold(f(v))
+        case Eval.FlatMap(e, g) => fold(e.flatMap(x => g(x).flatMap(f)))
 // Ленивость есть, а где контроль ошибок?
-
-
-
-
-
 
 /**
  * Демонстрационный(гибридный) вариант.
@@ -193,27 +159,24 @@ object InOutSystem {
             case Map(inOut, g) =>
               inOut.map(x => f(g(x))).toString
             case FlatMap(inOut, g) =>
-              inOut.flatMap(x => g(x).map(f)).toString 
+              inOut.flatMap(x => g(x).map(f)).toString
       }
 
   }
 
-  private[InOutSystem] final case class InOutSuccess[A](value: () => A)
-    extends InOut[Nothing, A]
+  private[InOutSystem] final case class InOutSuccess[A](value: () => A) extends InOut[Nothing, A]
 
-  private[InOutSystem] final case class InOutFailure[E](error: E)
-    extends InOut[E, Nothing]
+  private[InOutSystem] final case class InOutFailure[E](error: E) extends InOut[E, Nothing]
 
   private[InOutSystem] final case class Map[+E, A, +B](
-    inOut:  InOut[E, A],
+    inOut: InOut[E, A],
     f: A => B
   ) extends InOut[E, B]
 
   private[InOutSystem] final case class FlatMap[+E, A, +B](
-    inOut:  InOut[E, A],
+    inOut: InOut[E, A],
     f: A => InOut[E, B]
   ) extends InOut[E, B]
-
 
   // 2. constructors
 
@@ -228,16 +191,15 @@ object InOutSystem {
       pure(Try(calc)).flatMap(_.fold(err => raise(err), res => pure(res)))
   }
 
-
   // 3. operators
 
   extension [E, A](inOut: InOut[E, A])
 
-   def map[B](f: A => B): InOut[E, B] =
-     Map[E, A, B](inOut, f)
+    def map[B](f: A => B): InOut[E, B] =
+      Map[E, A, B](inOut, f)
 
-   def flatMap[B](f: A => InOut[E, B]): InOut[E, B] =
-     FlatMap[E, A, B](inOut, f)
+    def flatMap[B](f: A => InOut[E, B]): InOut[E, B] =
+      FlatMap[E, A, B](inOut, f)
 
     // def flatMap[B](f: A => InOut[E, B]): InOut[E, B] =
     //   inOut match {
@@ -250,26 +212,23 @@ object InOutSystem {
     // def map[B](f: A => B): InOut[E, B] =
     //   flatMap(a => InOut.pure(f(a)))
 
-
 }
 
-
 object InOutWithErrorDemo extends App {
-  import InOutSystem._
+  import InOutSystem.*
 
   val program: InOut[Throwable, String] =
     for {
-      _       <- InOut(println("Who are you?"))
-      name    <- InOut(scala.io.StdIn.readLine())
-      _       <- InOut(println("O!, Really?"))
+      _ <- InOut(println("Who are you?"))
+      name <- InOut(scala.io.StdIn.readLine())
+      _ <- InOut(println("O!, Really?"))
       confirm <- InOut(scala.io.StdIn.readLine())
-      result  <- confirm.toLowerCase() match {
-                  case "yes" => InOut.pure(name)
-                  case _     => InOut.raise(new Exception("Inadequate"))
-                }
-      _       <- InOut(println(s"Hello, $name!"))
+      result <- confirm.toLowerCase() match {
+        case "yes" => InOut.pure(name)
+        case _     => InOut.raise(new Exception("Inadequate"))
+      }
+      _ <- InOut(println(s"Hello, $name!"))
     } yield result
-
 
   println(program.toString)
   println()
@@ -278,9 +237,3 @@ object InOutWithErrorDemo extends App {
   println(program.toString)
 
 }
-
-
-
-
-
-

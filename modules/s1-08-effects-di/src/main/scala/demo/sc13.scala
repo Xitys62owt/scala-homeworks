@@ -1,7 +1,6 @@
 package sc13
 
-import zio.* 
-import zio.Duration.*
+import zio.*
 
 // val effect =
 //   ZIO.unit
@@ -13,7 +12,6 @@ import zio.Duration.*
 //     .as("discard and fail: ")
 //     .flatMap(msg => ZIO.consoleWith(_.printLine(msg)) *> ZIO.when(1 > 0)(ZIO.fail(new Exception("Boom!"))))
 //     .catchAll(err => ZIO.logInfo(err.getMessage()))
-
 
 object ZioErrorsDemo extends ZIOAppDefault:
 
@@ -28,20 +26,15 @@ object ZioErrorsDemo extends ZIOAppDefault:
   def reader(ref: Ref[Int]) =
     ref.get
       .tap(current => ZIO.when(current < 0)(ZIO.fail((s"Boom on $current"))))
-      .catchAll( err =>
-        ZIO.succeed(err.drop(8).toInt)
-        )
+      .catchAll(err => ZIO.succeed(err.drop(8).toInt))
 
   def scanner(readerIO: Task[Int]) =
     readerIO.tap(number => Console.printLine(number)).delay(500.millis).repeatWhile(_ > -3)
 
-
-  val test = 
-    for 
-      ref   <- Ref.make(0)
-      _     <- starter(ref)
-      _     <- ZIO.sleep(1.second)
-      _     <- scanner(reader(ref))
+  val test =
+    for
+      ref <- Ref.make(0)
+      _ <- starter(ref)
+      _ <- ZIO.sleep(1.second)
+      _ <- scanner(reader(ref))
     yield ()
-
-

@@ -2,11 +2,8 @@ package sc06
 
 import zio.*
 import zio.Console.*
-import zio.Duration.*
+
 import java.io.*
-
-
-
 
 object ExternalSystem:
 
@@ -18,8 +15,6 @@ object ExternalSystem:
 
   def readFile(fileReader: BufferedReader): Task[String] =
     ZIO.attemptBlocking(fileReader.readLine())
-
-
 
 // >>> AcquireRelease Demo <<< //
 
@@ -39,12 +34,7 @@ object AcquireReleaseDemo extends ZIOAppDefault:
       _ <- zio.Console.printLine(text2)
     yield ()
 
-
-
-
-
 // >>> Scope Demo <<< //
-
 
 object ScopeDemo extends ZIOAppDefault:
   import ExternalSystem.*
@@ -52,28 +42,27 @@ object ScopeDemo extends ZIOAppDefault:
   def openFileSafe(fileName: String): ZIO[Scope, Throwable, BufferedReader] =
     for
       file <- openFile(fileName)
-      _    <- ZIO.addFinalizer(closeFile(file) *> printLine(s"Closed: $fileName").ignore)
+      _ <- ZIO.addFinalizer(closeFile(file) *> printLine(s"Closed: $fileName").ignore)
     yield file
 
   def autoClosableFile(fileName: String): ZIO[Scope, Throwable, BufferedReader] =
     ZIO.fromAutoCloseable(openFile("file1.txt")) <*
       ZIO.addFinalizer(printLine(s"Closed: $fileName").ignore)
 
-
   val run: ZIO[Scope, Any, Any] =
     ZIO.addFinalizer(printLine("Pre").ignore) *>
-    /*ZIO.scoped*/ {
-      for
-        file1 <- openFileSafe("file1.txt")
-        _     <- ZIO.addFinalizer(printLine("Some time before next").ignore.delay(3.second))
-        file2 <- autoClosableFile("file2.txt")
+      /*ZIO.scoped*/ {
+        for
+          file1 <- openFileSafe("file1.txt")
+          _ <- ZIO.addFinalizer(printLine("Some time before next").ignore.delay(3.second))
+          file2 <- autoClosableFile("file2.txt")
 
-        text1 <- readFile(file1)
-        text2 <- readFile(file2)
+          text1 <- readFile(file1)
+          text2 <- readFile(file2)
 
-        _ <- printLine(text1)
-        _ <- printLine("")
-        _ <- printLine(text2)
-      yield ()
-    } *> 
-    ZIO.addFinalizer(printLine("Post").ignore)
+          _ <- printLine(text1)
+          _ <- printLine("")
+          _ <- printLine(text2)
+        yield ()
+      } *>
+      ZIO.addFinalizer(printLine("Post").ignore)

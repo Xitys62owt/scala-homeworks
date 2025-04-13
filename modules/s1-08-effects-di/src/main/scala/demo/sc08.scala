@@ -1,8 +1,8 @@
 package sc08
 
 import izumi.reflect.Tag
-import scala.util.{Failure, Success, Try}
 
+import scala.util.Try
 
 ////////////////////////////////////
 //----------------------------------
@@ -15,19 +15,19 @@ object InOutSystem {
     override def toString: String =
       self match
         case InOutSuccess(eval) => s"InOutSuccess(${eval()})"
-        case InOutFailure(err) =>  s"InOutFailure(${err.toString()})"
+        case InOutFailure(err)  => s"InOutFailure(${err.toString()})"
         case sc08.InOutSystem.Map(parent, f) =>
           parent match
-            case InOutSuccess(eval) =>  s"InOutSuccess(${f(eval())})"
+            case InOutSuccess(eval)  => s"InOutSuccess(${f(eval())})"
             case InOutFailure(error) => s"InOutFailure(${error.toString()})"
-            case Map(inOut, g) => inOut.map(a => InOutSuccess(() => f(g(a)))).toString
-            case FlatMap(inOut, g) => inOut.flatMap(a => g(a).map(f)).toString
+            case Map(inOut, g)       => inOut.map(a => InOutSuccess(() => f(g(a)))).toString
+            case FlatMap(inOut, g)   => inOut.flatMap(a => g(a).map(f)).toString
         case sc08.InOutSystem.FlatMap(parent, f) =>
           parent match
             case InOutSuccess(value) => f(value()).toString
             case InOutFailure(error) => s"InOutFailure(${error.toString()})"
-            case Map(inOut, g) => inOut.flatMap(a => f(g(a))).toString
-            case FlatMap(inOut, g) => inOut.flatMap(a => g(a).flatMap(f)).toString
+            case Map(inOut, g)       => inOut.flatMap(a => f(g(a))).toString
+            case FlatMap(inOut, g)   => inOut.flatMap(a => g(a).flatMap(f)).toString
   }
 
   private[InOutSystem] case class InOutSuccess[A](value: () => A) extends InOut[Nothing, A]
@@ -39,22 +39,19 @@ object InOutSystem {
     def pure[A](value: => A): InOut[Nothing, A] = InOutSuccess(() => value)
     def raise[E](error: => E): InOut[E, Nothing] = InOutFailure(error)
     def apply[A](calc: => A): InOut[Throwable, A] = pure(Try(calc)).flatMap(_.fold(err => raise(err), res => pure(res)))
-  
+
   }
 
   extension [E, A](inOut: InOut[E, A])
-   def map[B](f: A => B): InOut[E, B] = Map[E, A, B](inOut, f)
-   def flatMap[B](f: A => InOut[E, B]): InOut[E, B] = FlatMap[E, A, B](inOut, f)
+    def map[B](f: A => B): InOut[E, B] = Map[E, A, B](inOut, f)
+    def flatMap[B](f: A => InOut[E, B]): InOut[E, B] = FlatMap[E, A, B](inOut, f)
 
 }
 
-import InOutSystem.*
-
+import sc08.InOutSystem.*
 
 // R => F[ E | A ]
 trait InOutProgram[-R, +E, +A] extends (R => InOut[E, A])
-
-
 
 ////////////////////////////////////
 //----------------------------------
@@ -62,7 +59,7 @@ trait InOutProgram[-R, +E, +A] extends (R => InOut[E, A])
 
 trait InOutConsole {
   def printLine(line: => String): InOut[Throwable, Unit]
-  def readLine                  : InOut[Throwable, String]
+  def readLine: InOut[Throwable, String]
 }
 
 trait InOutRandom:
@@ -75,7 +72,6 @@ trait Esia:
 trait Users:
   def getId(userName: String): InOut[Throwable, Int]
   def getName(userId: Int): InOut[Throwable, String]
-
 
 //----------------------------------
 ////////////////////////////////////
@@ -90,17 +86,15 @@ trait Console extends InOutConsole {
 }
 object DefaultConsole extends Console
 
-
 trait Random extends InOutRandom {
   override def nextInt: InOut[Nothing, Int] =
     InOut.pure(scala.util.Random().nextInt())
 }
 object DefaultRandom extends Random
 
-
 trait EsiaImpl extends Esia:
   override def getInn(userId: Int): InOut[Throwable, String] =
-    InOut.pure(userId.toString*userId)
+    InOut.pure(userId.toString * userId)
   override def getAge(userId: Int): InOut[Throwable, Int] =
     InOut.pure(userId + 16)
 
@@ -108,14 +102,10 @@ trait UsersImpl extends Users:
   override def getId(userName: String): InOut[Throwable, Int] =
     InOut.pure(userName.length())
   override def getName(userId: Int): InOut[Throwable, String] =
-    InOut.pure(userId.toString*userId)
-
+    InOut.pure(userId.toString * userId)
 
 //----------------------------------
 ////////////////////////////////////
-
-
-
 
 ////////////////////////////////////
 //----------------------------------
@@ -129,23 +119,23 @@ object InOutWithDeps1Demo extends App {
     new:
       override def apply(consoleAndFetcher: InOutConsole & Esia & Users): InOut[Throwable, String] =
         for {
-          _       <- consoleAndFetcher.printLine("Who are you?")
-          name    <- consoleAndFetcher.readLine
-          _       <- consoleAndFetcher.printLine(("O!, Really?"))
+          _ <- consoleAndFetcher.printLine("Who are you?")
+          name <- consoleAndFetcher.readLine
+          _ <- consoleAndFetcher.printLine(("O!, Really?"))
           confirm <- consoleAndFetcher.readLine
-          result  <- confirm.toLowerCase() match {
-                      case "yes" => InOut.pure(name)
-                      case _     => InOut.raise(new Exception("Inadequate"))
-                    }
-          _       <- consoleAndFetcher.printLine(s"Hello, $name!")
-          uid     <- consoleAndFetcher.getId(name)
-          inn     <- consoleAndFetcher.getInn(uid)
-          _       <- consoleAndFetcher.printLine(s"Your inn is $inn!")
+          result <- confirm.toLowerCase() match {
+            case "yes" => InOut.pure(name)
+            case _     => InOut.raise(new Exception("Inadequate"))
+          }
+          _ <- consoleAndFetcher.printLine(s"Hello, $name!")
+          uid <- consoleAndFetcher.getId(name)
+          inn <- consoleAndFetcher.getInn(uid)
+          _ <- consoleAndFetcher.printLine(s"Your inn is $inn!")
         } yield result
 
   // Есть гарантии достаточности R, но очень неудобно R формировать
-  val deps = new EsiaImpl with UsersImpl with Console 
-  
+  val deps = new EsiaImpl with UsersImpl with Console
+
   val eval = program(deps)
   println(eval.toString)
   println()
@@ -155,18 +145,11 @@ object InOutWithDeps1Demo extends App {
 
 }
 
-
-
-
-
-
-
 ////////////////////////////////////
 //----------------------------------
 // Example 2
 //----------------------------------
 ////////////////////////////////////
-
 
 ////////////////////////////////////
 // Runtime
@@ -204,10 +187,8 @@ object Runtime:
     def apply[A](f: S => InOut[Throwable, A]): InOut[Throwable, A] =
       service.flatMap(f)
 
-
 //----------------------------------
 ////////////////////////////////////
-
 
 object InOutWithDeps2Demo extends App {
 
@@ -216,26 +197,26 @@ object InOutWithDeps2Demo extends App {
       override def apply(using runtime: Runtime): InOut[Throwable, String] =
         for {
           console <- Runtime.service[InOutConsole]
-          _       <- console.printLine("Who are you?")
-          name    <- console.readLine
-          _       <- console.printLine(("O!, Really?"))
+          _ <- console.printLine("Who are you?")
+          name <- console.readLine
+          _ <- console.printLine(("O!, Really?"))
           confirm <- console.readLine
-          result  <- confirm.toLowerCase() match {
-                      case "yes" => InOut.pure(name)
-                      case _     => InOut.raise(new Exception("Inadequate"))
-                    }
-          _       <- console.printLine(s"Hello, $name!")
-          userId  <- Runtime.serviceWithIO[Users](_.getId(name))
+          result <- confirm.toLowerCase() match {
+            case "yes" => InOut.pure(name)
+            case _     => InOut.raise(new Exception("Inadequate"))
+          }
+          _ <- console.printLine(s"Hello, $name!")
+          userId <- Runtime.serviceWithIO[Users](_.getId(name))
           userInn <- Runtime.serviceWithIO[Esia](_.getInn(userId))
-          _       <- console.printLine(s"Your inn is $userInn!")
+          _ <- console.printLine(s"Your inn is $userInn!")
         } yield result
 
   // Формировать R удобнее, но очень слабый контроль над этим каналом
-  given runtime : Runtime = 
+  given runtime: Runtime =
     Runtime.default
       .provide(
-        new EsiaImpl{}: Esia, 
-        new UsersImpl{}: Users, 
+        new EsiaImpl {}: Esia,
+        new UsersImpl {}: Users,
         DefaultConsole: InOutConsole
       )
 
@@ -247,5 +228,3 @@ object InOutWithDeps2Demo extends App {
   println(eval.toString())
 
 }
-
-

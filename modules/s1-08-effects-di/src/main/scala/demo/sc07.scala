@@ -1,12 +1,12 @@
 package sc07
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Try}
 
 
 object FromSlides:
 
   import cats.Monad
-  import cats.Monad.ops.toAllMonadOps
+  import cats.syntax.all.*
 
   type UserId   = String
   type UserName = String

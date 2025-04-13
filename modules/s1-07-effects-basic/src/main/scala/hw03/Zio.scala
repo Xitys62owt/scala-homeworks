@@ -1,38 +1,37 @@
 package hw03
 
 import zio.*
-import zio.Console.*
 import zio.Duration.*
-import java.io.*
+
+import scala.annotation.nowarn
 
 case class Author(idx: Int, name: String)
 
 trait AuthorService:
-    def get(idx: Int): UIO[Option[Author]]
-
+  def get(idx: Int): UIO[Option[Author]]
 
 object SlowStorage extends AuthorService:
-    private val storage = Map(
-        1 -> "John Doe",
-        2 -> "Joan Doe",
-        3 -> "Martin Odersky",
-        4 -> "Robert Martin",
-        5 -> "Isaak Asimov",
-        6 -> "Stanislav Lem",
-        7 -> "Edgar Frank Codd",
-        8 -> "Alan Mathison Turing",
-        9 -> "Alonzo Church",
-        10 -> "Kurt Friedrich Gödel",
-        11 -> "David Hilbert"
-    )
+  private val storage = Map(
+    1 -> "John Doe",
+    2 -> "Joan Doe",
+    3 -> "Martin Odersky",
+    4 -> "Robert Martin",
+    5 -> "Isaak Asimov",
+    6 -> "Stanislav Lem",
+    7 -> "Edgar Frank Codd",
+    8 -> "Alan Mathison Turing",
+    9 -> "Alonzo Church",
+    10 -> "Kurt Friedrich Gödel",
+    11 -> "David Hilbert"
+  )
 
-    override def get(idx: Int): UIO[Option[Author]] =
-        ZIO.sleep(100.millis) *> ZIO.succeed(storage.get(idx).map(Author(idx, _)))
+  override def get(idx: Int): UIO[Option[Author]] =
+    ZIO.sleep(100.millis) *> ZIO.succeed(storage.get(idx).map(Author(idx, _)))
 
-
+@nowarn
 class FastStorage(delegate: AuthorService, cache: Ref[Map[Int, String]]) extends AuthorService:
 
-    /**
+  /**
       * Напишите метод чтения записи из кэша, если она там есть.
       * Если запись есть, надо вернуть Some[Author].
       * Если записи нет, надо вернуть None
@@ -42,11 +41,11 @@ class FastStorage(delegate: AuthorService, cache: Ref[Map[Int, String]]) extends
       * @param idx индекс автора
       * @return IO-эффект с записью об авторе или отсутствием значения
       */
-    def getCached(idx: Int): UIO[Option[Author]] =
-        ZIO.sleep(10.millis) *>
-        ???
+  def getCached(idx: Int): UIO[Option[Author]] =
+    ZIO.sleep(10.millis) *>
+      ???
 
-    /**
+  /**
       * Напишите метод для размщения записи в кэше.
       * Метод должен обновлять кэш, добавляя в него одну запись
       *
@@ -55,11 +54,11 @@ class FastStorage(delegate: AuthorService, cache: Ref[Map[Int, String]]) extends
       * @param author запись об авторе, которая должна быть помещена в кэш
       * @return IO-монаду с пустым значением
       */
-    def putCached(author: Author): UIO[Unit] =
-        ZIO.sleep(10.millis) *>
-        ???
+  def putCached(author: Author): UIO[Unit] =
+    ZIO.sleep(10.millis) *>
+      ???
 
-    /**
+  /**
       * Напишите метод кэширующего чтения
       * 
       * Работать он должен следующим образом:
@@ -74,5 +73,5 @@ class FastStorage(delegate: AuthorService, cache: Ref[Map[Int, String]]) extends
       * @param idx индекс искомого автора
       * @return IO-эффект с записью об авторе или отсутствием значения
       */
-    override def get(idx: Int): UIO[Option[Author]] =
-        ???
+  override def get(idx: Int): UIO[Option[Author]] =
+    ???

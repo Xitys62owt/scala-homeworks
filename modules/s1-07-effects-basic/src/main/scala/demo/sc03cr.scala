@@ -1,7 +1,6 @@
 package sc03
 
-import zio.* 
-
+import zio.*
 
 object ZioRacingDemo extends ZIOAppDefault:
 
@@ -23,7 +22,6 @@ object ZioRacingDemo extends ZIOAppDefault:
       ZIO.sleep(100.millis) *> ZIO.succeed(bigStorage.get(idx))
     def apply(idx: Int): Task[String] =
       ZIO.sleep(100.millis) *> ZIO.attempt(bigStorage(idx))
-
 
   object FastStorage:
     private val smallStorage = Map(
@@ -47,35 +45,26 @@ object ZioRacingDemo extends ZIOAppDefault:
       _ <- ZIO.logInfo(s"Give $res. Take ${lat.toMillis()}ms")
     yield res
 
-  
   override def run =
-    fetchCached
-      .exitCode
-
-
+    fetchCached.exitCode
 
   val fetchAll =
-    ZIO.foreachPar(1 to 11):
-      idx => logLatency(FastStorage.get(idx).zipPar(SlowStorage.get(idx))).map(_ orElse _)
-    .withParallelism(16)
-    .map(_.toList)
-
-
-
+    ZIO
+      .foreachPar(1 to 11): idx =>
+        logLatency(FastStorage.get(idx).zipPar(SlowStorage.get(idx))).map(_ orElse _)
+      .withParallelism(16)
+      .map(_.toList)
 
   val fetchFast =
-    ZIO.foreachPar(1 to 11):
-      idx => logLatency(FastStorage.get(idx) race SlowStorage.get(idx))
-    .withParallelism(16)
-    .map(_.toList)
-
-
-
+    ZIO
+      .foreachPar(1 to 11): idx =>
+        logLatency(FastStorage.get(idx) race SlowStorage.get(idx))
+      .withParallelism(16)
+      .map(_.toList)
 
   val fetchCached =
-    ZIO.foreachPar(1 to 11):
-      idx => logLatency(FastStorage(idx).orElse(SlowStorage(idx)))
-    .withParallelism(16)
-    .map(_.toList)
-
-
+    ZIO
+      .foreachPar(1 to 11): idx =>
+        logLatency(FastStorage(idx).orElse(SlowStorage(idx)))
+      .withParallelism(16)
+      .map(_.toList)
