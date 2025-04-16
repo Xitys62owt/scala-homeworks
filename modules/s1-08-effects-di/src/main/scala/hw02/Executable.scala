@@ -25,11 +25,17 @@ object Executable:
     /**
         * Добавьте эффекту в исполняемой кодировке возможность восстанавливаться из ошибки
         */
-    def recover(f: Throwable => A): Effect[A] =
-      ???
+    def recover(f: Throwable => A): Effect[A] = Effect(() =>
+      fa.safeRun() match
+        case Failure(exception) => Success(f(exception))
+        case Success(value)     => Success(value)
+    )
 
     /**
         * Добавьте эффекту в исполняемой кодировке возможность восстанавливаться из ошибки
         */
-    def recoverWith(f: Throwable => Effect[A]): Effect[A] =
-      ???
+    def recoverWith(f: Throwable => Effect[A]): Effect[A] = Effect(() =>
+      fa.safeRun() match
+        case Failure(exception) => f(exception).safeRun()
+        case Success(value)     => Success(value)
+    )
