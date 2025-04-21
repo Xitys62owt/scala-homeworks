@@ -105,6 +105,17 @@ lazy val `s1-08-effects-di` = (project in file(s"modules/$s1_08"))
     )
   )
 
+val s1_09 = "s1-09-functor-flatmap"
+
+lazy val `s1-09-functor-flatmap` = (project in file(s"modules/$s1_09"))
+  .settings(commonSettings)
+  .settings(
+    name := s1_09,
+    libraryDependencies ++= Seq(
+      scalatest, ce, cetest, zio, ziotest
+    )
+  )
+
 lazy val `root` = (project in file("."))
   .settings(
     name           := "root",
@@ -118,7 +129,8 @@ lazy val `root` = (project in file("."))
     `s1-05-type-classes`,
     `s1-06-concurrency`,
     `s1-07-effects-basic`,
-    `s1-08-effects-di`
+    `s1-08-effects-di`,
+    `s1-09-functor-flatmap`,
   )
 
 lazy val moduleKeys: Map[String, String] =
@@ -130,7 +142,8 @@ lazy val moduleKeys: Map[String, String] =
     s1_05,
     s1_06,
     s1_07,
-    s1_08
+    s1_08,
+    s1_09,
   ).map(x => x.take(5) -> x).toMap
 
 commands += Command.command("hw") { state =>

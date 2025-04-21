@@ -26,3 +26,4 @@
 - [s1-06](/modules/s1-06-concurrency/src/main/scala/hw)
 - [s1-07](/modules/s1-07-effects-basic/src/main/scala)
 - [s1-08](/modules/s1-08-effects-di/src/main/scala)
+- [s1-09](/modules/s1-09-functor-flatmap/main/scala/ru/mipt/fp/README.md)
