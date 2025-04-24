@@ -116,6 +116,17 @@ lazy val `s1-09-functor-flatmap` = (project in file(s"modules/$s1_09"))
     )
   )
 
+val s1_10 = "s1-10-monad-errors"
+
+lazy val `s1-10-monad-errors` = (project in file(s"modules/$s1_10"))
+  .settings(commonSettings)
+  .settings(
+    name := s1_10,
+    libraryDependencies ++= Seq(
+      scalatest, ce, cetest, zio, ziotest
+    )
+  )
+
 lazy val `root` = (project in file("."))
   .settings(
     name           := "root",
@@ -131,6 +142,7 @@ lazy val `root` = (project in file("."))
     `s1-07-effects-basic`,
     `s1-08-effects-di`,
     `s1-09-functor-flatmap`,
+    `s1-10-monad-errors`,
   )
 
 lazy val moduleKeys: Map[String, String] =
