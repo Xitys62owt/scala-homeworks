@@ -32,8 +32,12 @@ object Executable:
           * @param other эффект переданный методы, завершающийся при исполнении объектом типа B или ошибкой
           * @return эффект для Tuple2[A, B] или ошибка
           */
-    def both[B](other: Effect[B]): Effect[(A, B)] =
-      ???
+    def both[B](other: Effect[B]): Effect[(A, B)] = Effect(() =>
+      (fa.safeRun(), other.safeRun()) match
+        case (Success(valueA), Success(valueB)) => Success((valueA, valueB))
+        case (Failure(exception), _)            => Failure(exception)
+        case (_, Failure(exception))            => Failure(exception)
+    )
 
 object Declarative:
 
@@ -90,7 +94,7 @@ object Declarative:
           * @return эффект для Tuple2[A, B] или ошибка
           */
     def zip[B](other: Effect[E, B]): Effect[E, (A, B)] =
-      ???
+      FlatMap(effect, a => FlatMap(other, b => EffectSuccess((a, b))))
 
   object Effect:
     def pure[A](value: => A): Effect[Nothing, A] =

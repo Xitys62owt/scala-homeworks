@@ -42,8 +42,7 @@ class FastStorage(delegate: AuthorService, cache: Ref[Map[Int, String]]) extends
       * @return IO-эффект с записью об авторе или отсутствием значения
       */
   def getCached(idx: Int): UIO[Option[Author]] =
-    ZIO.sleep(10.millis) *>
-      ???
+    ZIO.sleep(10.millis) *> cache.get.map(_.get(idx).map(Author(idx, _)))
 
   /**
       * Напишите метод для размщения записи в кэше.
@@ -55,8 +54,7 @@ class FastStorage(delegate: AuthorService, cache: Ref[Map[Int, String]]) extends
       * @return IO-монаду с пустым значением
       */
   def putCached(author: Author): UIO[Unit] =
-    ZIO.sleep(10.millis) *>
-      ???
+    ZIO.sleep(10.millis) *> cache.update(_.updated(author.idx, author.name))
 
   /**
       * Напишите метод кэширующего чтения
@@ -74,4 +72,15 @@ class FastStorage(delegate: AuthorService, cache: Ref[Map[Int, String]]) extends
       * @return IO-эффект с записью об авторе или отсутствием значения
       */
   override def get(idx: Int): UIO[Option[Author]] =
-    ???
+    for {
+      cached <- getCached(idx)
+      result <- cached match
+        case Some(author) => ZIO.succeed(Some(author))
+        case None =>
+          for {
+            delegated <- delegate.get(idx)
+            _ <- delegated match
+              case Some(author) => putCached(author)
+              case None         => ZIO.unit
+          } yield delegated
+    } yield result
