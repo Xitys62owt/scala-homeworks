@@ -70,11 +70,11 @@ class SegmentTreeSpec extends munit.FunSuite:
     )
 
     assertEquals(
-      tree.update(0, 754).calc(0, 1), // тут нужен метод расширение из пункта 5
+      tree.update(0, Some(754)).calc(0, 1), // тут нужен метод расширение из пункта 5
       Some(754)
     )
 
     assertEquals(
-      tree.update(5, 847).value,
+      tree.update(5, Some(847)).value,
       Some(847)
     )

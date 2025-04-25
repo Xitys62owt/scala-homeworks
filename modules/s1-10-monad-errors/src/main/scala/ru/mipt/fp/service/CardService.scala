@@ -1,19 +1,15 @@
 package ru.mipt.fp.service
 
 import java.time.Instant
-
 import cats.{Applicative, ApplicativeError}
-import cats.syntax.all.*
-
-import ru.mipt.fp.domain.{AccountId, Card, CardNumber, CardOperationStats, NetworkError, Operation, OperationStats, Ucid}
-import ru.mipt.fp.domain.NetworkError._
+import ru.mipt.fp.domain.{AccountId, Card, NetworkError, OperationStats, Ucid}
 import ru.mipt.fp.external.{CardsMasterSystemClient, OperationsSystemClient}
-import ru.mipt.fp.resilience.{Retry, FallbackCache}
-import ru.mipt.fp.resilience.Retry.*
-import ru.mipt.fp.resilience.FallbackCache.*
+import ru.mipt.fp.resilience.{FallbackCache, Retry}
 
+import scala.annotation.nowarn
 import scala.concurrent.duration.FiniteDuration
 
+@nowarn
 class CardService[F[_]: Applicative](
   operationsSystemClient: OperationsSystemClient[F],
   cardsMasterSystemClient: CardsMasterSystemClient[F],

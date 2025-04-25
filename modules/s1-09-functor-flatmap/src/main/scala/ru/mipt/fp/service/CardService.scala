@@ -4,8 +4,10 @@ import ru.mipt.fp.cache.Cache
 import ru.mipt.fp.domain.{Card, ClientId, Ucid}
 import ru.mipt.fp.external.CardsMasterSystemClient
 
+import scala.annotation.nowarn
 import scala.concurrent.duration.FiniteDuration
 
+@nowarn
 class CardService[F[_]](
     cardsClient: CardsMasterSystemClient[F],
     cardsCache: Cache[F, Ucid, Card],
