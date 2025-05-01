@@ -51,12 +51,12 @@ class CardService[F[_]: FlatMap](
       case Some(cards) =>
         cardsListCache.expire(clientId, cacheTtl).map(_ => cards)
       case None =>
-        cardsClient.getClientCards(clientId).map { cards =>
-          val maskedCards = cards.map(_.masked)
-          cardsListCache.put(clientId, maskedCards)
-          cardsListCache.expire(clientId, cacheTtl)
-          maskedCards
-        }
+        for {
+          cards <- cardsClient.getClientCards(clientId)
+          maskedCards = cards.map(_.masked)
+          _ <- cardsListCache.put(clientId, maskedCards)
+          _ <- cardsListCache.expire(clientId, cacheTtl)
+        } yield maskedCards
     }
 
   /** Запросить данные карты из внешнего хранилища по ее Ucid, выполнить маскирование и вернуть информацию
@@ -76,12 +76,12 @@ class CardService[F[_]: FlatMap](
       case Some(card) =>
         cardsCache.expire(ucid, cacheTtl).map(_ => card)
       case None =>
-        cardsClient.getCard(ucid).map { card =>
-          val maskedCard = card.masked
-          cardsCache.put(ucid, maskedCard)
-          cardsCache.expire(ucid, cacheTtl)
-          maskedCard
-        }
+        for {
+          card <- cardsClient.getCard(ucid)
+          maskedCard = card.masked
+          _ <- cardsCache.put(ucid, maskedCard)
+          _ <- cardsCache.expire(ucid, cacheTtl)
+        } yield maskedCard
     }
 
   /** Запросить деактивацию карты по ее Ucid
