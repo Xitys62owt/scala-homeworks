@@ -1,6 +1,6 @@
 package ru.mipt.fp.service
 
-import cats.MonadError
+//import cats.MonadError
 
 import java.time.Instant
 import org.scalamock.scalatest.MockFactory
@@ -14,18 +14,21 @@ import ru.mipt.fp.testdata.TestData.*
 
 import scala.concurrent.duration.*
 
+import scala.annotation.nowarn
+
+@nowarn("msg=unused value")
 class CardsServiceSpec extends AnyFlatSpec with Matchers with MockFactory:
 
   "getOperationsStatistics" should "return stats for account and cards" in new Wirings:
     val from = Instant.now().minusSeconds(10000)
     val to = Instant.now()
 
-    mockOperationsSystemClient.getAccountOperations expects (accountId, from, to) returns Right(accountOperations)
-    mockOperationsSystemClient.getCardOperations expects (ucid, from, to) returns Right(cardOperations)
-    mockCardsClient.getCard expects ucid returns Right(card)
-    mockCache.put expects (ucid, maskedCard) returns Right(())
+    mockOperationsSystemClient.getAccountOperations `expects` (accountId, from, to) `returns` Right(accountOperations)
+    mockOperationsSystemClient.getCardOperations `expects` (ucid, from, to) `returns` Right(cardOperations)
+    mockCardsClient.getCard `expects` ucid `returns` Right(card)
+    mockCache.put `expects` (ucid, maskedCard) `returns` Right(())
 
-    service.getOperationsStatistics(accountId, List(ucid), from, to) shouldBe Right(allOperationStats)
+    service.getOperationsStatistics(accountId, List(ucid), from, to) `shouldBe` Right(allOperationStats)
 
   testRetries(NetworkError.TimeoutError)
   testRetries(NetworkError.NotAvailableError)
@@ -39,46 +42,46 @@ class CardsServiceSpec extends AnyFlatSpec with Matchers with MockFactory:
       val from = Instant.now().minusSeconds(10000)
       val to = Instant.now()
 
-      (timer.sleep expects delay)
+      (timer.sleep `expects` delay)
         .returns(Right(()))
         .repeat(6)
 
-      mockOperationsSystemClient.getAccountOperations expects (accountId, from, to) returns Left(error)
-      mockOperationsSystemClient.getCardOperations expects (ucid, from, to) returns Left(error)
-      mockCardsClient.getCard expects ucid returns Right(card)
-      mockCache.put expects (ucid, maskedCard) returns Right(())
+      mockOperationsSystemClient.getAccountOperations `expects` (accountId, from, to) `returns` Left(error)
+      mockOperationsSystemClient.getCardOperations `expects` (ucid, from, to) `returns` Left(error)
+      mockCardsClient.getCard `expects` ucid `returns` Right(card)
+      mockCache.put `expects` (ucid, maskedCard) `returns` Right(())
 
-      service.getOperationsStatistics(accountId, List(ucid), from, to) shouldBe Right(emptyOperationStats)
+      service.getOperationsStatistics(accountId, List(ucid), from, to) `shouldBe` Right(emptyOperationStats)
 
     it should s"return stats for account and cards and card from fallback cache if card system is failed with $error" in new Wirings:
       val from = Instant.now().minusSeconds(10000)
       val to = Instant.now()
 
-      (timer.sleep expects delay)
+      (timer.sleep `expects` delay)
         .returns(Right(()))
         .repeat(3)
 
-      mockOperationsSystemClient.getAccountOperations expects (accountId, from, to) returns Right(accountOperations)
-      mockOperationsSystemClient.getCardOperations expects (ucid, from, to) returns Right(cardOperations)
-      mockCardsClient.getCard expects ucid returns Left(error)
-      mockCache.get expects ucid returns Right(Some(maskedCard))
+      mockOperationsSystemClient.getAccountOperations `expects` (accountId, from, to) `returns` Right(accountOperations)
+      mockOperationsSystemClient.getCardOperations `expects` (ucid, from, to) `returns` Right(cardOperations)
+      mockCardsClient.getCard `expects` ucid `returns` Left(error)
+      mockCache.get `expects` ucid `returns` Right(Some(maskedCard))
 
-      service.getOperationsStatistics(accountId, List(ucid), from, to) shouldBe Right(allOperationStats)
+      service.getOperationsStatistics(accountId, List(ucid), from, to) `shouldBe` Right(allOperationStats)
 
     it should s"fail if there is no card fallback cache and card system is failed with $error" in new Wirings:
       val from = Instant.now().minusSeconds(10000)
       val to = Instant.now()
 
-      (timer.sleep expects delay)
+      (timer.sleep `expects` delay)
         .returns(Right(()))
         .repeat(3)
 
-      mockOperationsSystemClient.getAccountOperations expects (accountId, from, to) returns Right(accountOperations)
-      mockOperationsSystemClient.getCardOperations expects (ucid, from, to) returns Right(cardOperations)
-      mockCardsClient.getCard expects ucid returns Left(error)
-      mockCache.get expects ucid returns Right(None)
+      mockOperationsSystemClient.getAccountOperations `expects` (accountId, from, to) `returns` Right(accountOperations)
+      mockOperationsSystemClient.getCardOperations `expects` (ucid, from, to) `returns` Right(cardOperations)
+      mockCardsClient.getCard `expects` ucid `returns` Left(error)
+      mockCache.get `expects` ucid `returns` Right(None)
 
-      service.getOperationsStatistics(accountId, List(ucid), from, to) shouldBe Left(error)
+      service.getOperationsStatistics(accountId, List(ucid), from, to) `shouldBe` Left(error)
 
   def testUnretryableError(error: NetworkError): Unit =
     it should s"return empty stats for account and cards if error is $error" in new Wirings:
@@ -86,12 +89,12 @@ class CardsServiceSpec extends AnyFlatSpec with Matchers with MockFactory:
       val from = Instant.now().minusSeconds(10000)
       val to = Instant.now()
 
-      mockOperationsSystemClient.getAccountOperations expects (accountId, from, to) returns Left(error)
-      mockOperationsSystemClient.getCardOperations expects (ucid, from, to) returns Left(error)
-      mockCardsClient.getCard expects ucid returns Right(card)
-      mockCache.put expects (ucid, maskedCard) returns Right(())
+      mockOperationsSystemClient.getAccountOperations `expects` (accountId, from, to) `returns` Left(error)
+      mockOperationsSystemClient.getCardOperations `expects` (ucid, from, to) `returns` Left(error)
+      mockCardsClient.getCard `expects` ucid `returns` Right(card)
+      mockCache.put `expects` (ucid, maskedCard) `returns` Right(())
 
-      service.getOperationsStatistics(accountId, List(ucid), from, to) shouldBe Right(emptyOperationStats)
+      service.getOperationsStatistics(accountId, List(ucid), from, to) `shouldBe` Right(emptyOperationStats)
 
   trait Wirings:
 
