@@ -13,7 +13,9 @@ package hw
   * есть несколько разных чисел с одинаковой (максимальной) частотой, то удалить
   * их все
   */
-def removeMostFrequent(numbers: Seq[Int]): Seq[Int] = ???
+def removeMostFrequent(numbers: Seq[Int]): Seq[Int] =
+  val freq = numbers.groupBy(identity).view.mapValues(_.size)
+  numbers.filter(num => freq.getOrElse(num, 0) < freq.values.maxOption.getOrElse(0))
 
 /** 2.
   *
@@ -22,7 +24,15 @@ def removeMostFrequent(numbers: Seq[Int]): Seq[Int] = ???
   * из соседних элементов нет, то среднее необходимо считать не по 3, а по 2 или
   * 1 значению.
   */
-def smoothNumbers(numbers: Seq[Int]): Seq[Double] = ???
+def smoothNumbers(numbers: Seq[Int]): Seq[Double] =
+  numbers.indices.map { i =>
+    val neighbors = Seq(
+      Some(numbers(i)),
+      if (i > 0) Some(numbers(i - 1)) else None,
+      if (i < numbers.length - 1) Some(numbers(i + 1)) else None
+    ).flatten
+    neighbors.sum.toDouble / neighbors.size
+  }
 
 case class User(
   lastName: String,
@@ -37,7 +47,8 @@ case class User(
   * возраст) Нужно отсортировать его в следующем порядке: фамилия (лекс) ->
   * возраст (по убыванию) -> имя (лекс) -> отчество (лекс)
   */
-def sortUsers(users: Seq[User]): Seq[User] = ???
+def sortUsers(users: Seq[User]): Seq[User] =
+  users.sortBy(user => (user.lastName, -user.age, user.firstName, user.middleName))
 
 /** 4.
   *
@@ -45,7 +56,8 @@ def sortUsers(users: Seq[User]): Seq[User] = ???
   *
   * powersOfTwo = 2 #:: 4 #:: 8 #:: 16 #:: 32 ...
   */
-val powersOfTwo: LazyList[BigInt] = ???
+val powersOfTwo: LazyList[BigInt] =
+  LazyList.from(1).map(n => BigInt(2).pow(n))
 
 /** 5.
   *
@@ -56,4 +68,7 @@ val powersOfTwo: LazyList[BigInt] = ???
   * В этой задаче не требуется оптимальный алгоритм, ожидается что хотя бы
   * вычисление первой 1000 простых чисел будет корректно работать.
   */
-val sieveEratosthene: LazyList[Int] = ???
+val sieveEratosthene: LazyList[Int] =
+  def sieve(list: LazyList[Int]): LazyList[Int] =
+    list.head #:: sieve(list.tail.filter(_ % list.head != 0))
+  2 #:: sieve(LazyList.from(3, 2).filter(_ % 2 != 0))
