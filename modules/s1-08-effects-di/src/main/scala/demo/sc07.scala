@@ -1,4 +1,4 @@
-package sc07
+/*package sc07
 
 import scala.util.{Failure, Try}
 
@@ -109,7 +109,7 @@ object MonadErrorSyntax:
     def flatMap[B](f: A => F[B]): F[B] =
       summon[MonadError[F]].flatMap(fa)(f)
 
-      
+
 // Runtime
 
 
@@ -152,7 +152,7 @@ object Example extends App {
 
 
   def greeting[F[_] : Console : Esia : MonadError]: F[String] =
-    for 
+    for
       _       <- Console[F].printLine("Who are you?")
       name    <- Console[F].readLine
       _       <- Console[F].printLine("O!, Really?")
@@ -168,7 +168,7 @@ object Example extends App {
 
     // at the end of the world
 
-  import EffectRuntime.given 
+  import EffectRuntime.given
   given fetcher: Esia[Effect] = External.newEffectfulFetcher
 
   val program = greeting
@@ -181,3 +181,4 @@ object Example extends App {
 }
 
 
+ */
