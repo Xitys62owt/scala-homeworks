@@ -11,41 +11,45 @@ import ru.mipt.fp.testdata.TestData._
 
 import scala.util.{Try, Success}
 
+import scala.annotation.nowarn
+
+@nowarn("msg=unused value")
+
 class CardsServiceSpec extends AnyFlatSpec with Matchers with MockFactory:
 
   "getClientCards" should "return cards from cache if exists" in new Wirings:
-    mockCardsListCache.get expects clientId returns Success(Some(maskedCards))
-    mockCardsListCache.expire expects (clientId, ttl) returns Success(())
+    mockCardsListCache.get `expects` clientId `returns` Success(Some(maskedCards))
+    mockCardsListCache.expire `expects` (clientId, ttl) `returns` Success(())
 
-    service.getClientCards(clientId) shouldEqual Success(maskedCards)
+    service.getClientCards(clientId) `shouldEqual` Success(maskedCards)
 
   it should "return cards from external service and cache the list if not exists" in new Wirings:
-    mockCardsListCache.get expects clientId returns Success(None)
-    mockCardsListCache.put expects (clientId, maskedCards) returns Success(())
-    mockCardsListCache.expire expects (clientId, ttl) returns Success(())
-    mockCardsClient.getClientCards expects clientId returns Success(cards)
+    mockCardsListCache.get `expects` clientId `returns` Success(None)
+    mockCardsListCache.put `expects` (clientId, maskedCards) `returns` Success(())
+    mockCardsListCache.expire `expects` (clientId, ttl) `returns` Success(())
+    mockCardsClient.getClientCards `expects` clientId `returns` Success(cards)
 
-    service.getClientCards(clientId) shouldEqual Success(maskedCards)
+    service.getClientCards(clientId) `shouldEqual` Success(maskedCards)
 
   "getCardById" should "return card from cache if exists" in new Wirings:
-    mockCardCache.get expects ucid returns Success(Some(maskedCard))
-    mockCardCache.expire expects (ucid, ttl) returns Success(())
+    mockCardCache.get `expects` ucid `returns` Success(Some(maskedCard))
+    mockCardCache.expire `expects` (ucid, ttl) `returns` Success(())
 
-    service.getCardById(ucid) shouldEqual Success(maskedCard)
+    service.getCardById(ucid) `shouldEqual` Success(maskedCard)
 
   it should "return card from external service and cache the card if not exists" in new Wirings:
-    mockCardCache.get expects ucid returns Success(None)
-    mockCardCache.put expects (ucid, maskedCard) returns Success(())
-    mockCardCache.expire expects (ucid, ttl) returns Success(())
-    mockCardsClient.getCard expects ucid returns Success(card)
+    mockCardCache.get `expects` ucid `returns` Success(None)
+    mockCardCache.put `expects` (ucid, maskedCard) `returns` Success(())
+    mockCardCache.expire `expects` (ucid, ttl) `returns` Success(())
+    mockCardsClient.getCard `expects` ucid `returns` Success(card)
 
-    service.getCardById(ucid) shouldEqual Success(maskedCard)
+    service.getCardById(ucid) `shouldEqual` Success(maskedCard)
 
   "deactivateCard" should "request card deactivation via external service and invalidate cache" in new Wirings:
-    mockCardsClient.deactivateCard expects ucid returns Success(())
-    mockCardCache.invalidate expects ucid returns Success(())
+    mockCardsClient.deactivateCard `expects` ucid `returns` Success(())
+    mockCardCache.invalidate `expects` ucid `returns` Success(())
     
-    service.deactivateCard(ucid) shouldEqual Success(())
+    service.deactivateCard(ucid) `shouldEqual` Success(())
 
   trait Wirings:
     val mockCardsClient    = mock[CardsMasterSystemClient[Try]]
