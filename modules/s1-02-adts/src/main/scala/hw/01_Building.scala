@@ -28,35 +28,72 @@ package hw
   *      писать не обязательно
   */
 
-type Resident // rewrite me
-type Gender // rewrite me
+case class Resident(age: Int, gender: Gender)
+sealed trait Gender
+case object Male extends Gender
+case object Female extends Gender
 
-type Building // rewrite me
+sealed trait Floor {
+  def next: Option[Floor]
+} // вынес, т.к. building в строчке ниже уже должен знать про floor
+case class Building(address: String, firstFloor: Floor)
+
+case class Business(name: String)
+case class ResidentialFloor(residents: List[Resident], next: Option[Floor]) extends Floor
+case class CommercialFloor(businesses: List[Business], next: Option[Floor]) extends Floor
+case class Attic(business: Option[Business], next: Option[Floor]) extends Floor
+// вроде как у чердака ссылки быть не должно, но ссылка по умолчанию есть у этажа, и остается у чердака
 
 object Building:
-  type Business // rewrite me
-  type Commercial // rewrite me
-  type Floor // rewrite me
-  type Attic // rewrite me
-  type ResidentialFloor // rewrite me
-
   /** Проходится по зданию снизу в вверх, применяя функцию [[f]] на каждом этаже
     * с начальным аккумулятором [[accumulator]]
     */
-  def fold[T](building: Building, accumulator: T)(f: (T, Floor) => T): T = ???
+  def fold[T](building: Building, accumulator: T)(f: (T, Floor) => T): T = 
+    // чтобы передавать этаж, а не здание
+    def loop(floor: Option[Floor], acc: T): T = 
+      floor match
+        case Some(floor) => loop(floor.next, f(acc, floor))
+        case None => acc
+
+    loop(Some(building.firstFloor), accumulator)
 
   /** Подсчитывает количество этажей, на которых живет хотя бы один мужчина
     * старше [[olderThan]]. Используйте [[fold]]
     */
-  def countOldManFloors(building: Building, olderThan: Int): Int = ???
+  def countOldManFloors(building: Building, olderThan: Int): Int = 
+    fold(building, 0) { (acc, floor) =>
+      floor match
+        case ResidentialFloor(residents, _) 
+          if residents.exists(r => r.gender == Male && r.age >= olderThan) => acc + 1
+        case _ => acc
+    }
 
   /** Находит наибольший возраст женьщины, проживающей в здании. Используйте
     * [[fold]]
     */
-  def womanMaxAge(building: Building): Option[Int] = ???
+  def womanMaxAge(building: Building): Option[Int] = 
+    fold(building, Option.empty[Int]) { (maxAgeOpt, floor) =>
+      floor match
+        case ResidentialFloor(residents, _) =>
+          val femaleAges = residents.filter(_.gender == Female).map(_.age)
+          if (femaleAges.isEmpty) maxAgeOpt
+          else 
+            maxAgeOpt match
+              case None => Some(femaleAges.max)
+              case Some(currentMax) => Some(math.max(currentMax, femaleAges.max)) 
+        case _ => maxAgeOpt
+    }
 
   /** Находит кол-во коммерческих заведений в здании. Используйте [[fold]] */
-  def countCommercial(building: Building): Int = ???
+  def countCommercial(building: Building): Int = 
+    fold(building, 0) { (acc, floor) =>
+      floor match
+        case CommercialFloor(businesses, _) => acc + businesses.size
+        case Attic(Some(business), _) => acc + 1
+        case _ => acc
+    }
 
   /** Находит среднее кол-во коммерческих заведений в зданиях. Используйте [[fold]] */
-  def countCommercialAvg(building: List[Building]): Double = ???
+  def countCommercialAvg(building: List[Building]): Double = 
+    if (building.isEmpty) 0.0
+    else building.map(countCommercial).sum.toDouble / building.size

@@ -19,7 +19,7 @@ class ServiceLevelAdvanceSpec extends munit.FunSuite:
         """
           val specialPlLevel: ServiceLevelAdvance[Platinum] =
             new ServiceLevelAdvance[Economy]
-              .advance[Business]
+              .advance[Business_]
               .advance
         """
       ),
@@ -33,7 +33,7 @@ class ServiceLevelAdvanceSpec extends munit.FunSuite:
           val eliteLevel =
             new ServiceLevelAdvance[Economy]
               .advance[Elite]
-              .advance[Business]
+              .advance[Business_]
         """
       ).nonEmpty
     )
