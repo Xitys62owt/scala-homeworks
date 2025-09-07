@@ -12,7 +12,8 @@ package hw
   *  swap(100) = 1
   *  swap(42) = swap(24)
   */
-def swap(x: Long): Long = ???
+def swap(x: Long, acc: Long = 0): Long =
+  if (x <= 0) acc else swap(x / 10, 10 * acc + x % 10)
 
 /**
   * 2. Реализуйте метод, возвращающий n-ое число последовательности:
@@ -23,11 +24,12 @@ def swap(x: Long): Long = ???
   *  selfRepeat(0) = 1
   *  selfRepeat(1) = 2
   *  selfRepeat(2) = 2
-  *  selfRepeat(2) = 3
+  *  selfRepeat(3) = 3
   *  selfRepeat(10) = 5
   *  selfRepeat(42) = 9
   */
-def selfRepeat(n: Int): Int = ???
+def selfRepeat(n: Int, acc: Int = 1): Int =
+  if (n < 1) (if (n == 0) acc else (acc - 1)) else selfRepeat(n - acc, acc + 1)
 
 /**
   * 3. Фибоначчи, делящиеся на k
@@ -54,7 +56,13 @@ def selfRepeat(n: Int): Int = ???
   *
   *    fibDiv(10, 2) = 832040
   */
-def fibDiv(k: Int, n: Int): Long = ???
+def fibDiv(k: Int, n: Int, acc1: Long = 0, acc2: Long = 1): Long =
+  if (n <= -1) acc2 - acc1
+  else if (acc1 % k == 0)
+    fibDiv(k, n - 1, acc2, acc1 + acc2)
+  else fibDiv(k, n, acc2, acc1 + acc2)
+// я не придумал как не делать лишний подсчет (чтобы возвращать просто acc1, а не acc2-acc1)
+// без использования временных переменных типа val
 
 /**
   * 4. (* опционально) Максимум в дереве
@@ -89,7 +97,10 @@ import Tree.*
   *
   *
   */
-def maxT(tree: Tree): Int = ???
+def maxT(tree: Tree): Int =
+  tree match
+    case Node(value, left, right) => (value max maxT(left) max maxT(right))
+    case Leaf(value)              => value
 
 /**
   * 4.2
@@ -123,4 +134,7 @@ def maxT(tree: Tree): Int = ???
   *       82    0
   *
   */
-def mapT(t: Tree, f: Int => Int): Tree = ???
+def mapT(t: Tree, f: Int => Int): Tree =
+  t match
+    case Node(value, left, right) => Node(f(value), mapT(left, f), mapT(right, f))
+    case Leaf(value)              => Leaf(f(value))

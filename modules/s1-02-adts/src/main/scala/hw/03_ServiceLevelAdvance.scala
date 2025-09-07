@@ -12,15 +12,16 @@ class Economy
 class UpgradedEconomy extends Economy
 class Special1b extends UpgradedEconomy
 class ExtendedEconomy extends Economy
-class Business extends ExtendedEconomy
-class Elite extends Business
-class Platinum extends Business
+class Business_ extends ExtendedEconomy
+// в первой задаче был свой бизнес, ругается на то что класс имеет то же название
+class Elite extends Business_
+class Platinum extends Business_
 
 /** Модифицируйте код таким образом, чтобы ServiceLevelAdvance был привязан к
   * уровню обслуживания, а ServiceLevelAdvance.advance мог только повышать
   * уровень обслуживания. Подсказку, как именно модифицировать, вы найдете в
   * тестах.
   */
-class ServiceLevelAdvance {
-  def advance: ServiceLevelAdvance = new ServiceLevelAdvance
+class ServiceLevelAdvance[T <: Economy] {
+  def advance[U <: T]: ServiceLevelAdvance[U] = new ServiceLevelAdvance[U]
 }

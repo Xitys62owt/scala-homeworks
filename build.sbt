@@ -1,4 +1,4 @@
-import org.typelevel.scalacoptions.{ScalaVersion, ScalacOption, ScalacOptions}
+import org.typelevel.scalacoptions.ScalacOptions
 import deps.*
 import sbt.internal.*
 import StateSyntax.*
@@ -83,6 +83,52 @@ lazy val `s1-06-concurrency` = (project in file(s"modules/$s1_06"))
     )
   )
 
+val s1_07 = "s1-07-effects-basic"
+
+lazy val `s1-07-effects-basic` = (project in file(s"modules/$s1_07"))
+  .settings(commonSettings)
+  .settings(
+    name := s1_07,
+    libraryDependencies ++= Seq(
+      scalatest, ce, cetest, zio, ziotest
+    )
+  )
+
+val s1_08 = "s1-08-effects-di"
+
+lazy val `s1-08-effects-di` = (project in file(s"modules/$s1_08"))
+  .settings(commonSettings)
+  .settings(
+    name := s1_08,
+    libraryDependencies ++= Seq(
+      scalatest, ce, cetest, zio, ziotest
+    )
+  )
+
+val s1_09 = "s1-09-functor-flatmap"
+
+lazy val `s1-09-functor-flatmap` = (project in file(s"modules/$s1_09"))
+  .settings(commonSettings)
+  .settings(
+    name := s1_09,
+    libraryDependencies ++= Seq(
+      ce, scalamock, scalatest
+    ),
+    scalacOptions += "-experimental",
+  )
+
+val s1_10 = "s1-10-monad-errors"
+
+lazy val `s1-10-monad-errors` = (project in file(s"modules/$s1_10"))
+  .settings(commonSettings)
+  .settings(
+    name := s1_10,
+    libraryDependencies ++= Seq(
+      ce, scalamock, scalatest
+    ),
+    scalacOptions += "-experimental",
+  )
+
 lazy val `root` = (project in file("."))
   .settings(
     name           := "root",
@@ -94,7 +140,11 @@ lazy val `root` = (project in file("."))
     `s1-03-collections`,
     `s1-04-laziness-errors`,
     `s1-05-type-classes`,
-    `s1-06-concurrency`
+    `s1-06-concurrency`,
+    `s1-07-effects-basic`,
+    `s1-08-effects-di`,
+    `s1-09-functor-flatmap`,
+    `s1-10-monad-errors`,
   )
 
 lazy val moduleKeys: Map[String, String] =
@@ -104,7 +154,11 @@ lazy val moduleKeys: Map[String, String] =
     s1_03,
     s1_04,
     s1_05,
-    s1_06
+    s1_06,
+    s1_07,
+    s1_08,
+    s1_09,
+    s1_10,
   ).map(x => x.take(5) -> x).toMap
 
 commands += Command.command("hw") { state =>

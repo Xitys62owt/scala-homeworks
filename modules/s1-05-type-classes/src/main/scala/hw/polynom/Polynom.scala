@@ -10,7 +10,13 @@ case class Polynom[A](coeffs: List[A]):
   /**
    Реализовать красивый toString, строка на выходе должна быть похожа на многочлен
    */
-  override def toString: String = coeffs.toString
+  override def toString: String =
+    coeffs.zipWithIndex
+      .collect {
+        case (c, i) if c != 0 => s"${c}x^$i"
+      }
+      .reverse
+      .mkString(" + ")
 
   /**
    Реализовать разность многочленов над полем F
@@ -21,7 +27,19 @@ case class Polynom[A](coeffs: List[A]):
    Для поля остатков по модулю 5:
    (x^3 + 4x + 1) - (2x^5 + x^3 - 3x^2 - x - 1) === 3x^5 + 3x^2 + 2
    */
-  infix def minus(other: Polynom[A])(implicit F: Field[A]): Polynom[A] = ???
+  infix def minus(other: Polynom[A])(implicit F: Field[A]): Polynom[A] =
+    val maxLength = math.max(coeffs.length, other.coeffs.length)
+    val newCoeffs = (0 until maxLength)
+      .map { i =>
+        val aInd = coeffs.length - 1 - i
+        val bInd = other.coeffs.length - 1 - i
+        val a = if (aInd >= 0) coeffs(aInd) else F.zero
+        val b = if (bInd >= 0) other.coeffs(bInd) else F.zero
+        F.add(a, F.addInv(b))
+      }
+      .toList
+      .reverse
+    Polynom(newCoeffs)
 
   /** Опциональное задание со звездочкой.
    * Реализовать евклидово деление двух многочленов над полем F. Метод должен возвращать пару из частного и остатка от деления.
